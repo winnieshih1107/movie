@@ -75,27 +75,30 @@
     /* ── RATING RANGE ── */
     .rating-bar {
       max-width: 1200px; margin: -14px auto 28px; padding: 0 20px;
-      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      display: flex; flex-direction: column; gap: 6px;
     }
     .rating-label { font-size: .85rem; color: var(--muted); white-space: nowrap; }
-    .rating-values { font-size: .82rem; color: var(--text); display: flex; gap: 8px; min-width: 70px; }
-    .rating-slider-wrap { position: relative; flex: 1; min-width: 200px; height: 28px; }
-    .rating-slider-wrap input[type="range"] {
-      position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
-      width: 100%; margin: 0; background: transparent; pointer-events: none;
-      -webkit-appearance: none; appearance: none;
+    .rating-slider-row { display: flex; align-items: center; gap: 12px; }
+    .rating-tag { font-size: .8rem; color: var(--muted); width: 34px; flex-shrink: 0; }
+    .rating-value { font-size: .82rem; color: var(--text); width: 34px; flex-shrink: 0; text-align: right; }
+    .rating-slider-row input[type="range"] {
+      flex: 1; min-width: 160px; height: 28px; margin: 0; background: transparent;
+      -webkit-appearance: none; appearance: none; cursor: pointer;
     }
-    .rating-slider-wrap input[type="range"]::-webkit-slider-runnable-track {
+    .rating-slider-row input[type="range"]::-webkit-slider-runnable-track {
       height: 4px; background: var(--border); border-radius: 2px;
     }
-    .rating-slider-wrap input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; pointer-events: auto;
+    .rating-slider-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
       width: 16px; height: 16px; border-radius: 50%;
       background: var(--accent); border: 2px solid #fff; cursor: pointer; margin-top: -6px;
     }
-    .rating-slider-wrap input[type="range"]::-moz-range-thumb {
-      pointer-events: auto; width: 16px; height: 16px; border-radius: 50%;
-      background: var(--accent); border: 2px solid #fff; cursor: pointer;
+    .rating-slider-row input[type="range"]::-moz-range-track {
+      height: 4px; background: var(--border); border-radius: 2px;
+    }
+    .rating-slider-row input[type="range"]::-moz-range-thumb {
+      width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff;
+      background: var(--accent); cursor: pointer;
     }
 
     /* ── MOVIE GRID ── */
@@ -373,13 +376,15 @@
 <!-- RATING RANGE -->
 <div class="rating-bar">
   <span class="rating-label">評分篩選（片單範圍 {{ '%.1f'|format(score_lo) }}–{{ '%.1f'|format(score_hi) }}）</span>
-  <div class="rating-values">
-    <span id="score-min-label">{{ '%.1f'|format(score_lo) }}</span>
-    <span id="score-max-label">{{ '%.1f'|format(score_hi) }}</span>
-  </div>
-  <div class="rating-slider-wrap">
+  <div class="rating-slider-row">
+    <span class="rating-tag">最低</span>
     <input type="range" id="score-min" min="{{ score_lo }}" max="{{ score_hi }}" step="0.1" value="{{ score_lo }}" autocomplete="off" oninput="onScoreRangeInput(event)" />
+    <span id="score-min-label" class="rating-value">{{ '%.1f'|format(score_lo) }}</span>
+  </div>
+  <div class="rating-slider-row">
+    <span class="rating-tag">最高</span>
     <input type="range" id="score-max" min="{{ score_lo }}" max="{{ score_hi }}" step="0.1" value="{{ score_hi }}" autocomplete="off" oninput="onScoreRangeInput(event)" />
+    <span id="score-max-label" class="rating-value">{{ '%.1f'|format(score_hi) }}</span>
   </div>
 </div>
 
