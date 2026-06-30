@@ -71,10 +71,10 @@ p, label, div, span { font-size: 1.05rem !important; color: #d4d8e2 !important; 
   background: #1a1a2e;
 }
 .chat-bot-av {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 48px; height: 48px; border-radius: 50%;
   background: linear-gradient(135deg, #6c63ff, #48cfad);
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; flex-shrink: 0;
+  font-size: 26px; flex-shrink: 0;
 }
 .chat-header-info h4 { margin: 0; font-size: .88rem; color: #fff !important; }
 .chat-header-info p  { margin: 0; font-size: .7rem;  color: #48cfad !important; }
@@ -107,9 +107,9 @@ div[data-testid="stButton"] > button[kind="primary"] {
   background: linear-gradient(135deg, #6c63ff, #48cfad) !important;
   border: none !important;
   border-radius: 50% !important;
-  width: 56px !important; height: 56px !important;
-  font-size: 22px !important;
-  box-shadow: 0 6px 24px rgba(108,99,255,.45) !important;
+  width: 72px !important; height: 72px !important;
+  font-size: 38px !important;
+  box-shadow: 0 6px 28px rgba(108,99,255,.5) !important;
   padding: 0 !important;
   line-height: 1 !important;
 }
@@ -308,7 +308,7 @@ with chat_float:
 
     else:
         # Toggle button
-        if st.button("💬", type="primary", key="open_chat"):
+        if st.button("🤖", type="primary", key="open_chat"):
             st.session_state.chat_open = True
             st.rerun()
 
