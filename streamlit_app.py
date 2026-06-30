@@ -306,17 +306,10 @@ st.markdown(
     f"<p style='color:#9ca3af;font-size:.85rem;margin:10px 0 0'>評分篩選（片單範圍 {_score_lo:.1f}–{_score_hi:.1f}）</p>",
     unsafe_allow_html=True,
 )
-col_min, col_max = st.columns(2)
-with col_min:
-    min_score = st.slider(
-        "最低評分", min_value=_score_lo, max_value=_score_hi, value=_score_lo, step=0.1,
-    )
-with col_max:
-    max_score = st.slider(
-        "最高評分", min_value=_score_lo, max_value=_score_hi, value=_score_hi, step=0.1,
-    )
-if min_score > max_score:
-    min_score, max_score = max_score, min_score
+min_score, max_score = st.slider(
+    "score_range", min_value=_score_lo, max_value=_score_hi, value=(_score_lo, _score_hi), step=0.1,
+    label_visibility="collapsed",
+)
 
 sort_map = {"預設排序": "id", "評分高→低": "score_desc", "評分低→高": "score_asc", "最新年份": "year_desc"}
 
