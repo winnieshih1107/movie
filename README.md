@@ -4,11 +4,13 @@ A full-stack movie browser with an AI-powered chatbot built with **Flask**, **St
 
 ## 🚀 Live Demo
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://wimovie.streamlit.app/)
+[![Deployed on Vercel](https://vercel.com/button)](https://movie-cyan-rho-99.vercel.app/)
 
-👉 **[https://wimovie.streamlit.app/](https://wimovie.streamlit.app/)**
+👉 **[https://movie-cyan-rho-99.vercel.app/](https://movie-cyan-rho-99.vercel.app/)**
 
-> Enter your own [Gemini API Key](https://aistudio.google.com/app/apikey) (free) in the sidebar to enable the AI chatbot.
+Also available on Streamlit Cloud: [https://wimovie.streamlit.app/](https://wimovie.streamlit.app/)
+
+> Enter your own [Gemini API Key](https://aistudio.google.com/app/apikey) (free) to enable the AI chatbot.
 
 ---
 
@@ -97,7 +99,7 @@ CREATE TABLE movies (
 | Alt UI    | Streamlit                   |
 | AI        | Google Gemini 2.5 Flash     |
 | Images    | Pillow                      |
-| Deploy    | Streamlit Cloud             |
+| Deploy    | Vercel (Flask) + Streamlit Cloud (Streamlit) |
 
 ## API Endpoints (Flask)
 
