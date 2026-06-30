@@ -33,18 +33,27 @@ st.markdown("""
 /* Hide Streamlit default top padding */
 .block-container { padding-top: 2rem !important; }
 
-/* Movie titles & text */
+/* Movie titles & text — 字體加大 */
 h1, h2, h3 { color: #fff !important; }
-p, label   { color: #d4d8e2 !important; }
+h1          { font-size: 2.4rem !important; }
+h2          { font-size: 1.6rem !important; }
+h3          { font-size: 1.25rem !important; }
+p, label, div, span { font-size: 1.05rem !important; color: #d4d8e2 !important; }
+
+/* 小標 subtitle 加大一點 */
+[data-testid="stMarkdownContainer"] p {
+  font-size: 1.08rem !important;
+  line-height: 1.65 !important;
+}
 
 /* Card title */
 .card-title {
-  font-size: .84rem; font-weight: 600; color: #fff;
-  padding: 6px 4px 2px; line-height: 1.4; min-height: 2.5em;
+  font-size: 1rem; font-weight: 600; color: #fff;
+  padding: 6px 4px 2px; line-height: 1.4; min-height: 2.6em;
   display: -webkit-box; -webkit-line-clamp: 2;
   -webkit-box-orient: vertical; overflow: hidden;
 }
-.card-meta  { font-size: .72rem; color: #9ca3af; padding: 0 4px 6px; }
+.card-meta  { font-size: .85rem; color: #9ca3af; padding: 0 4px 6px; }
 .score-tag  { color: #fbbf24; font-weight: 700; }
 
 /* ── Floating chat widget ── */
@@ -303,4 +312,4 @@ with chat_float:
             st.session_state.chat_open = True
             st.rerun()
 
-chat_float.float("bottom: 28px; right: 28px; width: 360px; z-index: 9999;")
+chat_float.float("top: 68px; right: 28px; width: 360px; z-index: 9999;")
