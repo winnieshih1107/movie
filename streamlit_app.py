@@ -1,4 +1,5 @@
 import os
+import base64
 import random
 import streamlit as st
 from streamlit_float import float_init
@@ -7,6 +8,12 @@ from database import init_db, seed_from_json, search_movies
 
 load_dotenv()
 init_db()
+
+# Load robot avatar as base64
+_avatar_path = os.path.join(os.path.dirname(__file__), "static", "robot.png")
+with open(_avatar_path, "rb") as _f:
+    ROBOT_B64 = base64.b64encode(_f.read()).decode()
+ROBOT_IMG = f"data:image/png;base64,{ROBOT_B64}"
 if not os.path.exists(os.path.join(os.path.dirname(__file__), "movies.db")):
     seed_from_json(os.path.join(os.path.dirname(__file__), "movies.json"))
 
@@ -72,9 +79,12 @@ p, label, div, span { font-size: 1.05rem !important; color: #d4d8e2 !important; 
 }
 .chat-bot-av {
   width: 48px; height: 48px; border-radius: 50%;
-  background: linear-gradient(135deg, #6c63ff, #48cfad);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 26px; flex-shrink: 0;
+  overflow: hidden; flex-shrink: 0;
+  border: 2px solid rgba(108,99,255,.5);
+  box-shadow: 0 0 10px rgba(108,99,255,.3);
+}
+.chat-bot-av img {
+  width: 100%; height: 100%; object-fit: cover;
 }
 .chat-header-info h4 { margin: 0; font-size: .88rem; color: #fff !important; }
 .chat-header-info p  { margin: 0; font-size: .7rem;  color: #48cfad !important; }
@@ -102,16 +112,16 @@ p, label, div, span { font-size: 1.05rem !important; color: #d4d8e2 !important; 
   display: table;
 }
 
-/* Toggle button */
+/* Toggle button — image injected dynamically below */
 div[data-testid="stButton"] > button[kind="primary"] {
-  background: linear-gradient(135deg, #6c63ff, #48cfad) !important;
   border: none !important;
   border-radius: 50% !important;
   width: 88px !important; height: 88px !important;
-  font-size: 54px !important;
+  font-size: 0 !important; color: transparent !important;
   box-shadow: 0 6px 28px rgba(108,99,255,.5) !important;
-  padding: 0 !important;
-  line-height: 1 !important;
+  padding: 0 !important; overflow: hidden !important;
+  background-size: cover !important;
+  background-position: center !important;
 }
 
 /* Stacked input look */
@@ -129,6 +139,15 @@ div[data-testid="stButton"] > button[kind="primary"] {
 /* Sidebar API key section */
 [data-testid="stSidebar"] h2 { color: #fff !important; }
 [data-testid="stSidebar"] p  { color: #9ca3af !important; }
+</style>
+""", unsafe_allow_html=True)
+
+# Inject dynamic CSS with robot image base64
+st.markdown(f"""
+<style>
+div[data-testid="stButton"] > button[kind="primary"] {{
+  background-image: url({ROBOT_IMG}) !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -276,7 +295,7 @@ with chat_float:
         st.markdown(f"""
         <div class="chat-float-wrap">
           <div class="chat-header">
-            <div class="chat-bot-av">🤖</div>
+            <div class="chat-bot-av"><img src="{ROBOT_IMG}" alt="bot"/></div>
             <div class="chat-header-info">
               <h4>Movie Bot</h4>
               <p>{"✅ AI 已連線" if st.session_state.api_key else "請設定 API Key"}</p>
@@ -308,7 +327,7 @@ with chat_float:
 
     else:
         # Toggle button
-        if st.button("🤖", type="primary", key="open_chat"):
+        if st.button(" ", type="primary", key="open_chat"):
             st.session_state.chat_open = True
             st.rerun()
 
