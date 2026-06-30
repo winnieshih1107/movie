@@ -64,12 +64,39 @@
       transition: border-color .2s;
     }
     .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap input::placeholder { color: var(--muted); opacity: 1; }
     .search-wrap::before { content: '🔍'; position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 14px; }
     .filter-bar select {
       padding: 9px 12px; background: var(--surface); border: 1px solid var(--border);
       border-radius: 10px; color: var(--text); font-size: .88rem; outline: none; cursor: pointer;
     }
     #count-label { font-size: .82rem; color: var(--muted); white-space: nowrap; }
+
+    /* ── RATING RANGE ── */
+    .rating-bar {
+      max-width: 1200px; margin: -14px auto 28px; padding: 0 20px;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    }
+    .rating-label { font-size: .85rem; color: var(--muted); white-space: nowrap; }
+    .rating-values { font-size: .82rem; color: var(--text); display: flex; gap: 8px; min-width: 70px; }
+    .rating-slider-wrap { position: relative; flex: 1; min-width: 200px; height: 28px; }
+    .rating-slider-wrap input[type="range"] {
+      position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+      width: 100%; margin: 0; background: transparent; pointer-events: none;
+      -webkit-appearance: none; appearance: none;
+    }
+    .rating-slider-wrap input[type="range"]::-webkit-slider-runnable-track {
+      height: 4px; background: var(--border); border-radius: 2px;
+    }
+    .rating-slider-wrap input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; pointer-events: auto;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--accent); border: 2px solid #fff; cursor: pointer; margin-top: -6px;
+    }
+    .rating-slider-wrap input[type="range"]::-moz-range-thumb {
+      pointer-events: auto; width: 16px; height: 16px; border-radius: 50%;
+      background: var(--accent); border: 2px solid #fff; cursor: pointer;
+    }
 
     /* ── MOVIE GRID ── */
     .grid-wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px 100px; }
@@ -328,6 +355,12 @@
   <div class="search-wrap">
     <input type="text" id="search" placeholder="Search title…" oninput="filterMovies()" />
   </div>
+  <select id="category" onchange="filterMovies()">
+    <option value="">全部類別</option>
+    {% for raw, label in categories %}
+    <option value="{{ raw }}">{{ label }}</option>
+    {% endfor %}
+  </select>
   <select id="sort" onchange="filterMovies()">
     <option value="default">Default order</option>
     <option value="score_desc">Rating ↓ High to Low</option>
@@ -335,6 +368,19 @@
     <option value="year_desc">Year ↓ Newest</option>
   </select>
   <span id="count-label"></span>
+</div>
+
+<!-- RATING RANGE -->
+<div class="rating-bar">
+  <span class="rating-label">評分篩選</span>
+  <div class="rating-values">
+    <span id="score-min-label">0.0</span>
+    <span id="score-max-label">10.0</span>
+  </div>
+  <div class="rating-slider-wrap">
+    <input type="range" id="score-min" min="0" max="10" step="0.1" value="0" oninput="onScoreRangeInput()" />
+    <input type="range" id="score-max" min="0" max="10" step="0.1" value="10" oninput="onScoreRangeInput()" />
+  </div>
 </div>
 
 <!-- GRID -->
@@ -345,7 +391,8 @@
          onclick="openModal({{ loop.index0 }})"
          data-name="{{ m.name_tw|lower }}"
          data-score="{{ m.score or 0 }}"
-         data-year="{{ m.release[:4] if m.release else '0' }}">
+         data-year="{{ m.release[:4] if m.release else '0' }}"
+         data-category="{{ m.category or '' }}">
       <img class="card-img"
            src="/poster/poster_{{ '%03d' % m.id }}.jpg"
            data-fallback="{{ m.img_url or '' }}"
@@ -356,7 +403,7 @@
         <div class="card-title">{{ m.name_tw }}</div>
         <div class="card-meta">
           <span class="score">{{ m.score or '—' }}</span>
-          <span class="card-cat">{{ (m.category or '').split('/')[0].strip() }}</span>
+          <span class="card-cat">{{ (m.category_tw or '').split('/')[0].strip() }}</span>
         </div>
         <div class="card-date">{{ (m.release or '')[:4] }}</div>
       </div>
@@ -419,12 +466,12 @@
   <div id="chat-box">
     <div class="msg-row bot">
       <div class="av bot">🤖</div>
-      <div class="bubble">Hi! 🎬 I'm Movie Bot. Ask me for recommendations or click any film to learn more!</div>
+      <div class="bubble">您好！我是 Movie Bot 🎬 請問想找什麼電影？</div>
     </div>
   </div>
 
   <div class="chat-input-bar">
-    <textarea id="user-input" rows="1" placeholder="Type a message…"></textarea>
+    <textarea id="user-input" rows="1" placeholder="輸入訊息…"></textarea>
     <button id="send-btn" onclick="sendMessage()">&#10148;</button>
   </div>
 </div>
@@ -504,15 +551,38 @@
   const MOVIES = {{ movies | tojson }};
   let filtered = [...MOVIES];
 
+  // ── Rating range (dual slider) ──────────────────────────────────
+  function onScoreRangeInput() {
+    const minEl = document.getElementById('score-min');
+    const maxEl = document.getElementById('score-max');
+    let min = parseFloat(minEl.value);
+    let max = parseFloat(maxEl.value);
+    if (min > max) {
+      // keep the two handles from crossing
+      if (event.target === minEl) { max = min; maxEl.value = max; }
+      else { min = max; minEl.value = min; }
+    }
+    document.getElementById('score-min-label').textContent = min.toFixed(1);
+    document.getElementById('score-max-label').textContent = max.toFixed(1);
+    filterMovies();
+  }
+
   // ── Filter / Sort ─────────────────────────────────────────────
   function filterMovies() {
-    const q    = document.getElementById('search').value.toLowerCase();
-    const sort = document.getElementById('sort').value;
+    const q        = document.getElementById('search').value.toLowerCase();
+    const sort     = document.getElementById('sort').value;
+    const category = document.getElementById('category').value;
+    const scoreMin = parseFloat(document.getElementById('score-min').value);
+    const scoreMax = parseFloat(document.getElementById('score-max').value);
     const cards = document.querySelectorAll('.card');
 
     let visible = 0;
     cards.forEach((card, i) => {
-      const match = !q || card.dataset.name.includes(q);
+      const nameMatch  = !q || card.dataset.name.includes(q);
+      const catMatch   = !category || card.dataset.category.includes(category);
+      const score      = parseFloat(card.dataset.score) || 0;
+      const scoreMatch = score >= scoreMin && score <= scoreMax;
+      const match = nameMatch && catMatch && scoreMatch;
       card.style.display = match ? '' : 'none';
       if (match) visible++;
     });
@@ -531,7 +601,7 @@
     }
 
     document.getElementById('count-label').textContent =
-      q ? `${visible} result${visible !== 1 ? 's' : ''}` : '';
+      `${visible} result${visible !== 1 ? 's' : ''}`;
   }
 
   // ── Modal ─────────────────────────────────────────────────────
@@ -551,7 +621,7 @@
 
     const badges = document.getElementById('m-badges');
     badges.innerHTML = '';
-    (m.category || '').split('/').forEach(cat => {
+    (m.category_tw || '').split('/').forEach(cat => {
       if (!cat.trim()) return;
       const b = document.createElement('span');
       b.className = 'badge';
@@ -634,9 +704,9 @@
     try {
       const res  = await fetch('/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message: text}) });
       const data = await res.json();
-      hideTyping(); appendMsg(data.reply || '(no response)', 'bot');
+      hideTyping(); appendMsg(data.reply || '（無回應）', 'bot');
     } catch {
-      hideTyping(); appendMsg('⚠️ Connection error. Please try again.', 'bot');
+      hideTyping(); appendMsg('⚠️ 連線錯誤，請稍後再試。', 'bot');
     } finally {
       sendBtn.disabled = false; input.focus();
     }

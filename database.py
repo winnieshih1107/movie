@@ -21,6 +21,24 @@ def get_conn():
     return conn
 
 
+# Seed data stores genre names in Simplified Chinese; map to Traditional for display.
+S2T_GENRES = {
+    "传记": "傳記", "冒险": "冒險", "剧情": "劇情", "动作": "動作", "动画": "動畫",
+    "历史": "歷史", "古装": "古裝", "喜剧": "喜劇", "奇幻": "奇幻", "家庭": "家庭",
+    "悬疑": "懸疑", "惊悚": "驚悚", "战争": "戰爭", "歌舞": "歌舞", "武侠": "武俠",
+    "灾难": "災難", "爱情": "愛情", "犯罪": "犯罪", "科幻": "科幻", "纪录片": "紀錄片",
+    "西部": "西部", "音乐": "音樂",
+}
+
+
+def to_traditional(text: str) -> str:
+    if not text:
+        return text
+    for simp, trad in S2T_GENRES.items():
+        text = text.replace(simp, trad)
+    return text
+
+
 def init_db():
     with get_conn() as conn:
         conn.execute("""

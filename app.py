@@ -13,11 +13,15 @@ POSTER_DIR = os.path.join(os.path.dirname(BASE_DIR), "posters")
 app = Flask(__name__)
 
 # ── Load movie data ──────────────────────────────────────────────
-from database import init_db, seed_from_json, get_all_movies
+from database import init_db, seed_from_json, get_all_movies, get_all_categories, to_traditional
 init_db()
 if not os.path.exists(os.path.join(BASE_DIR, "movies.db")):
     seed_from_json(os.path.join(BASE_DIR, "movies.json"))
 MOVIES = get_all_movies()
+for _m in MOVIES:
+    _m["category_tw"] = to_traditional(_m.get("category", ""))
+
+CATEGORY_OPTIONS = [(c, to_traditional(c)) for c in get_all_categories()]
 
 MOVIE_LIST_TEXT = "\n".join(
     f"{m['id']}. {m['name_tw']}｜評分:{m['score']}｜{m['category']}｜{m.get('release','')}"
@@ -127,7 +131,7 @@ def get_reply(message: str) -> str:
 # ── Routes ───────────────────────────────────────────────────────
 @app.route("/")
 def index():
-    return render_template("index.html", movies=MOVIES)
+    return render_template("index.html", movies=MOVIES, categories=CATEGORY_OPTIONS)
 
 
 @app.route("/poster/<path:filename>")
