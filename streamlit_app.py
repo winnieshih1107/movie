@@ -147,6 +147,23 @@ div[data-testid="stButton"] > button[kind="primary"] {
 /* Sidebar API key section */
 [data-testid="stSidebar"] h2 { color: #fff !important; }
 [data-testid="stSidebar"] p  { color: #9ca3af !important; }
+
+/* Whole floating chat panel — opaque background so text stays readable
+   over the poster grid behind it (covers header, messages AND the
+   Streamlit input/button widgets which sit outside .chat-float-wrap) */
+.st-key-chat_float_panel {
+  background: #15151f !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.55) !important;
+  padding: 10px 12px 14px !important;
+}
+.st-key-chat_float_panel .chat-float-wrap {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  margin: -10px -12px 8px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -292,7 +309,7 @@ if not movies:
     st.info("找不到符合的電影，請嘗試其他關鍵字。")
 
 # ── Floating chat widget (bottom-right) ───────────────────────────
-chat_float = st.container()
+chat_float = st.container(key="chat_float_panel")
 with chat_float:
     if st.session_state.chat_open:
         # Chat panel
