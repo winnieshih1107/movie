@@ -62,10 +62,14 @@ def init_gemini(api_key: str) -> bool:
         gemini_client = client
         active_model  = None
         GEMINI_KEY    = api_key
-        # persist to .env
-        env_path = os.path.join(BASE_DIR, ".env")
-        with open(env_path, "w", encoding="utf-8") as f:
-            f.write(f"GEMINI_API_KEY={api_key}\n")
+        # persist to .env (best-effort — read-only filesystems like Vercel
+        # just keep the key in memory for the life of this process instead)
+        try:
+            env_path = os.path.join(BASE_DIR, ".env")
+            with open(env_path, "w", encoding="utf-8") as f:
+                f.write(f"GEMINI_API_KEY={api_key}\n")
+        except OSError:
+            pass
         print(f"✅ Gemini client ready")
         return True
     except Exception as e:

@@ -1,8 +1,18 @@
+import shutil
 import sqlite3
 import json
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "movies.db")
+_BUNDLED_DB = os.path.join(os.path.dirname(__file__), "movies.db")
+
+if os.environ.get("VERCEL"):
+    # Vercel's deployment filesystem is read-only — copy the bundled,
+    # pre-seeded DB into /tmp (the only writable path) on cold start.
+    DB_PATH = "/tmp/movies.db"
+    if not os.path.exists(DB_PATH) and os.path.exists(_BUNDLED_DB):
+        shutil.copyfile(_BUNDLED_DB, DB_PATH)
+else:
+    DB_PATH = _BUNDLED_DB
 
 
 def get_conn():
