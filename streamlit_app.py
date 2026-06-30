@@ -19,6 +19,14 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), "movies.db")):
 
 POSTER_DIR = os.path.join(os.path.dirname(__file__), "..", "posters")
 
+
+def movie_image(m: dict) -> str | None:
+    """Return local path if exists, else fall back to remote img_url."""
+    local = os.path.join(POSTER_DIR, m.get("poster_file", ""))
+    if os.path.exists(local):
+        return local
+    return m.get("img_url") or None
+
 # ── Page config ───────────────────────────────────────────────────
 st.set_page_config(
     page_title="🎬 Movie House",
@@ -249,9 +257,9 @@ if st.session_state.selected:
     with st.expander(f"📽 {m['name_tw']}", expanded=True):
         c1, c2 = st.columns([1, 2])
         with c1:
-            p = os.path.join(POSTER_DIR, m["poster_file"])
-            if os.path.exists(p):
-                st.image(p, use_container_width=True)
+            img_src = movie_image(m)
+            if img_src:
+                st.image(img_src, use_container_width=True)
         with c2:
             st.markdown(f"### {m['name_tw']}")
             st.markdown(f"⭐ **{m['score']}**　🎭 {m['category']}")
@@ -267,9 +275,9 @@ for i in range(0, len(movies), COLS):
     cols = st.columns(COLS)
     for col, m in zip(cols, row):
         with col:
-            p = os.path.join(POSTER_DIR, m["poster_file"])
-            if os.path.exists(p):
-                st.image(p, use_container_width=True)
+            img_src = movie_image(m)
+            if img_src:
+                st.image(img_src, use_container_width=True)
             st.markdown(
                 f'<div class="card-title">{m["name_tw"]}</div>'
                 f'<div class="card-meta"><span class="score-tag">★ {m["score"]}</span>　'

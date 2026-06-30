@@ -8,3 +8,4 @@ opencc-python-reimplemented>=0.1
 python-dotenv>=1.0
 google-genai>=1.0
 streamlit>=1.35
+streamlit-float>=0.3
