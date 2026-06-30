@@ -378,8 +378,8 @@
     <span id="score-max-label">10.0</span>
   </div>
   <div class="rating-slider-wrap">
-    <input type="range" id="score-min" min="0" max="10" step="0.1" value="0" oninput="onScoreRangeInput()" />
-    <input type="range" id="score-max" min="0" max="10" step="0.1" value="10" oninput="onScoreRangeInput()" />
+    <input type="range" id="score-min" min="0" max="10" step="0.1" value="0" oninput="onScoreRangeInput(event)" />
+    <input type="range" id="score-max" min="0" max="10" step="0.1" value="10" oninput="onScoreRangeInput(event)" />
   </div>
 </div>
 
@@ -552,14 +552,14 @@
   let filtered = [...MOVIES];
 
   // ── Rating range (dual slider) ──────────────────────────────────
-  function onScoreRangeInput() {
+  function onScoreRangeInput(e) {
     const minEl = document.getElementById('score-min');
     const maxEl = document.getElementById('score-max');
     let min = parseFloat(minEl.value);
     let max = parseFloat(maxEl.value);
     if (min > max) {
       // keep the two handles from crossing
-      if (event.target === minEl) { max = min; maxEl.value = max; }
+      if (e && e.target === minEl) { max = min; maxEl.value = max; }
       else { min = max; minEl.value = min; }
     }
     document.getElementById('score-min-label').textContent = min.toFixed(1);
