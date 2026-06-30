@@ -63,17 +63,44 @@ def get_all_movies():
         return [dict(r) for r in conn.execute("SELECT * FROM movies ORDER BY id").fetchall()]
 
 
-def search_movies(query: str = "", sort: str = "id"):
+def get_all_categories():
+    with get_conn() as conn:
+        rows = conn.execute("SELECT DISTINCT category FROM movies WHERE category IS NOT NULL").fetchall()
+    cats = set()
+    for r in rows:
+        for c in (r["category"] or "").split("/"):
+            c = c.strip()
+            if c:
+                cats.add(c)
+    return sorted(cats)
+
+
+def search_movies(query: str = "", sort: str = "id", category: str = "",
+                   min_score: float = 0.0, max_score: float = 10.0):
     order = {
         "score_desc": "score DESC",
         "score_asc":  "score ASC",
         "year_desc":  "CAST(SUBSTR(release,1,4) AS INTEGER) DESC",
     }.get(sort, "id ASC")
 
-    sql = f"SELECT * FROM movies WHERE name_tw LIKE ? OR name LIKE ? ORDER BY {order}"
-    pattern = f"%{query}%"
+    conditions = ["(name_tw LIKE ? OR name LIKE ?)"]
+    params = [f"%{query}%", f"%{query}%"]
+
+    if category:
+        conditions.append("category LIKE ?")
+        params.append(f"%{category}%")
+
+    if min_score:
+        conditions.append("score >= ?")
+        params.append(min_score)
+
+    if max_score and max_score < 10.0:
+        conditions.append("score <= ?")
+        params.append(max_score)
+
+    sql = f"SELECT * FROM movies WHERE {' AND '.join(conditions)} ORDER BY {order}"
     with get_conn() as conn:
-        return [dict(r) for r in conn.execute(sql, (pattern, pattern)).fetchall()]
+        return [dict(r) for r in conn.execute(sql, params).fetchall()]
 
 
 if __name__ == "__main__":

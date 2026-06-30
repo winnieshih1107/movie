@@ -4,10 +4,18 @@ import random
 import streamlit as st
 from streamlit_float import float_init
 from dotenv import load_dotenv
-from database import init_db, seed_from_json, search_movies
+from opencc import OpenCC
+from database import init_db, seed_from_json, search_movies, get_all_categories
 
 load_dotenv()
 init_db()
+
+_cc = OpenCC("s2twp")  # Simplified → Traditional (Taiwan, with phrase conversion)
+
+
+@st.cache_data
+def to_traditional(text: str) -> str:
+    return _cc.convert(text) if text else text
 
 # Load robot avatar as base64
 _avatar_path = os.path.join(os.path.dirname(__file__), "static", "robot.png")
@@ -143,6 +151,37 @@ div[data-testid="stButton"] > button[kind="primary"] {
   border-color: #6c63ff !important;
   box-shadow: 0 0 0 2px rgba(108,99,255,.2) !important;
 }
+[data-testid="stTextInput"] input::placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+/* Selectbox (sort / category) — opaque dark bg + high-contrast text,
+   so e.g. "預設排序" doesn't blend into the page background */
+[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+  background: #1c1c2a !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 10px !important;
+  color: #f0f1f5 !important;
+}
+[data-testid="stSelectbox"] div[data-baseweb="select"] span {
+  color: #f0f1f5 !important;
+}
+[data-baseweb="popover"] li,
+[data-baseweb="popover"] li span {
+  color: #f0f1f5 !important;
+  background: #1c1c2a !important;
+}
+[data-baseweb="popover"] li:hover {
+  background: #2a2a3e !important;
+}
+
+/* Score range slider label/values */
+[data-testid="stSlider"] label,
+[data-testid="stSlider"] div[data-testid="stTickBarMin"],
+[data-testid="stSlider"] div[data-testid="stTickBarMax"] {
+  color: #9ca3af !important;
+}
 
 /* Sidebar API key section */
 [data-testid="stSidebar"] h2 { color: #fff !important; }
@@ -257,14 +296,34 @@ def ask_gemini(question: str) -> str:
 st.markdown("# 🎬 Movie House")
 st.markdown("<p style='color:#6b7280;margin-top:-10px'>100 部手選經典電影</p>", unsafe_allow_html=True)
 
-col_s, col_sort, col_cnt = st.columns([3, 2, 1])
+col_s, col_cat, col_sort, col_cnt = st.columns([3, 2, 2, 1])
 with col_s:
     query = st.text_input("search", placeholder="🔍 搜尋電影名稱…", label_visibility="collapsed")
+with col_cat:
+    raw_categories = get_all_categories()
+    cat_label_map = {to_traditional(c): c for c in raw_categories}  # 繁體顯示 → 資料庫原值
+    category_label = st.selectbox(
+        "category", ["全部類別"] + list(cat_label_map.keys()), label_visibility="collapsed",
+    )
+    category = "" if category_label == "全部類別" else cat_label_map[category_label]
 with col_sort:
     sort = st.selectbox("sort", ["預設排序", "評分高→低", "評分低→高", "最新年份"], label_visibility="collapsed")
+
+st.markdown("<p style='color:#9ca3af;font-size:.85rem;margin:10px 0 0'>評分篩選</p>", unsafe_allow_html=True)
+min_score, max_score = st.slider(
+    "score_range", min_value=0.0, max_value=10.0, value=(0.0, 10.0), step=0.1,
+    label_visibility="collapsed",
+)
+
 sort_map = {"預設排序": "id", "評分高→低": "score_desc", "評分低→高": "score_asc", "最新年份": "year_desc"}
 
-movies = search_movies(query, sort_map[sort])
+movies = search_movies(
+    query,
+    sort_map[sort],
+    category=category,
+    min_score=min_score,
+    max_score=max_score,
+)
 with col_cnt:
     st.markdown(f"<p style='color:#6b7280;padding-top:8px'>{len(movies)} 部</p>", unsafe_allow_html=True)
 
@@ -279,7 +338,7 @@ if st.session_state.selected:
                 st.image(img_src, use_container_width=True)
         with c2:
             st.markdown(f"### {m['name_tw']}")
-            st.markdown(f"⭐ **{m['score']}**　🎭 {m['category']}")
+            st.markdown(f"⭐ **{m['score']}**　🎭 {to_traditional(m['category'])}")
             st.markdown(f"📅 {m['release']}　⏱ {m['duration']}")
         if st.button("✕ 關閉"):
             st.session_state.selected = None
@@ -298,7 +357,7 @@ for i in range(0, len(movies), COLS):
             st.markdown(
                 f'<div class="card-title">{m["name_tw"]}</div>'
                 f'<div class="card-meta"><span class="score-tag">★ {m["score"]}</span>　'
-                f'{(m["category"] or "").split("/")[0].strip()}</div>',
+                f'{to_traditional((m["category"] or "").split("/")[0].strip())}</div>',
                 unsafe_allow_html=True,
             )
             if st.button("詳情", key=f"d_{m['id']}"):
