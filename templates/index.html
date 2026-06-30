@@ -372,14 +372,14 @@
 
 <!-- RATING RANGE -->
 <div class="rating-bar">
-  <span class="rating-label">評分篩選</span>
+  <span class="rating-label">評分篩選（片單範圍 {{ '%.1f'|format(score_lo) }}–{{ '%.1f'|format(score_hi) }}）</span>
   <div class="rating-values">
-    <span id="score-min-label">0.0</span>
-    <span id="score-max-label">10.0</span>
+    <span id="score-min-label">{{ '%.1f'|format(score_lo) }}</span>
+    <span id="score-max-label">{{ '%.1f'|format(score_hi) }}</span>
   </div>
   <div class="rating-slider-wrap">
-    <input type="range" id="score-min" min="0" max="10" step="0.1" value="0" oninput="onScoreRangeInput(event)" />
-    <input type="range" id="score-max" min="0" max="10" step="0.1" value="10" oninput="onScoreRangeInput(event)" />
+    <input type="range" id="score-min" min="{{ score_lo }}" max="{{ score_hi }}" step="0.1" value="{{ score_lo }}" autocomplete="off" oninput="onScoreRangeInput(event)" />
+    <input type="range" id="score-max" min="{{ score_lo }}" max="{{ score_hi }}" step="0.1" value="{{ score_hi }}" autocomplete="off" oninput="onScoreRangeInput(event)" />
   </div>
 </div>
 

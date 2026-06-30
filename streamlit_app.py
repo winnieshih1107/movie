@@ -4,7 +4,7 @@ import random
 import streamlit as st
 from streamlit_float import float_init
 from dotenv import load_dotenv
-from database import init_db, seed_from_json, search_movies, get_all_categories, to_traditional
+from database import init_db, seed_from_json, search_movies, get_all_categories, to_traditional, get_score_range
 
 load_dotenv()
 init_db()
@@ -301,9 +301,13 @@ with col_cat:
 with col_sort:
     sort = st.selectbox("sort", ["預設排序", "評分高→低", "評分低→高", "最新年份"], label_visibility="collapsed")
 
-st.markdown("<p style='color:#9ca3af;font-size:.85rem;margin:10px 0 0'>評分篩選</p>", unsafe_allow_html=True)
+_score_lo, _score_hi = get_score_range()
+st.markdown(
+    f"<p style='color:#9ca3af;font-size:.85rem;margin:10px 0 0'>評分篩選（片單範圍 {_score_lo:.1f}–{_score_hi:.1f}）</p>",
+    unsafe_allow_html=True,
+)
 min_score, max_score = st.slider(
-    "score_range", min_value=0.0, max_value=10.0, value=(0.0, 10.0), step=0.1,
+    "score_range", min_value=_score_lo, max_value=_score_hi, value=(_score_lo, _score_hi), step=0.1,
     label_visibility="collapsed",
 )
 

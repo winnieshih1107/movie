@@ -91,6 +91,16 @@ def get_all_movies():
         return [dict(r) for r in conn.execute("SELECT * FROM movies ORDER BY id").fetchall()]
 
 
+def get_score_range():
+    """Actual min/max score in the dataset, so rating sliders can use a range
+    that's actually responsive instead of a flat 0-10 most films won't span."""
+    with get_conn() as conn:
+        row = conn.execute("SELECT MIN(score) AS lo, MAX(score) AS hi FROM movies WHERE score IS NOT NULL").fetchone()
+    if not row or row["lo"] is None:
+        return 0.0, 10.0
+    return float(row["lo"]), float(row["hi"])
+
+
 def get_all_categories():
     with get_conn() as conn:
         rows = conn.execute("SELECT DISTINCT category FROM movies WHERE category IS NOT NULL").fetchall()
