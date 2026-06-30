@@ -300,13 +300,14 @@ with chat_float:
             f'<div class="bubble-{"user" if m["role"]=="user" else "bot"}">{m["text"]}</div>'
             for m in st.session_state.messages
         )
+        status_text = "✅ AI 已連線" if st.session_state.api_key else "⚠️ 請設定 API Key"
         st.markdown(f"""
         <div class="chat-float-wrap">
           <div class="chat-header">
             <div class="chat-bot-av"><img src="{ROBOT_IMG}" alt="bot"/></div>
             <div class="chat-header-info">
               <h4>Movie Bot</h4>
-              <p>{"✅ AI 已連線" if st.session_state.api_key else "請設定 API Key"}</p>
+              <p>{status_text}</p>
             </div>
             <div class="online-dot"></div>
           </div>
@@ -314,6 +315,34 @@ with chat_float:
         </div>
         """, unsafe_allow_html=True)
 
+        # ── Inline API Key setup (when no key is set) ──────────────
+        if not st.session_state.api_key:
+            st.markdown(
+                "<p style='font-size:.78rem;color:#f59e0b;margin:4px 0 2px'>🔑 請輸入 Gemini API Key 以啟用 AI：</p>",
+                unsafe_allow_html=True,
+            )
+            k_col, btn_col = st.columns([3, 1])
+            with k_col:
+                inline_key = st.text_input(
+                    "inline_key", placeholder="貼上 API Key…",
+                    type="password", label_visibility="collapsed", key="inline_api_key",
+                )
+            with btn_col:
+                if st.button("套用", key="apply_inline_key", use_container_width=True):
+                    if inline_key.strip():
+                        st.session_state.api_key = inline_key.strip()
+                        st.success("✅ 已套用")
+                        st.rerun()
+                    else:
+                        st.error("不可空白")
+            st.markdown(
+                "<p style='font-size:.72rem;color:#6b7280'>"
+                "免費取得：<a href='https://aistudio.google.com/app/apikey' target='_blank' style='color:#6c63ff'>"
+                "aistudio.google.com</a></p>",
+                unsafe_allow_html=True,
+            )
+
+        # ── Message input ──────────────────────────────────────────
         user_input = st.text_input(
             "chat_input", placeholder="輸入訊息…",
             label_visibility="collapsed", key="chat_text_input",
